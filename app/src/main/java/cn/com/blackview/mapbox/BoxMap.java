@@ -1,4 +1,4 @@
-//package cn.com.blackview.mapbox;
+//package cn.com.blackview.azdome.map;
 //
 //import android.animation.ObjectAnimator;
 //import android.animation.TypeEvaluator;
@@ -7,8 +7,8 @@
 //import android.graphics.BitmapFactory;
 //import android.graphics.Color;
 //import android.util.Log;
-//
-//import androidx.annotation.NonNull;
+//import android.view.View;
+//import android.widget.Toast;
 //
 //import com.dueeeke.videoplayer.player.IjkVideoView;
 //import com.mapbox.geojson.Feature;
@@ -25,12 +25,14 @@
 //import com.mapbox.mapboxsdk.maps.UiSettings;
 //import com.mapbox.mapboxsdk.style.layers.LineLayer;
 //import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+//import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 //import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 //
 //import java.util.ArrayList;
 //import java.util.List;
 //import java.util.concurrent.TimeUnit;
 //
+//import cn.com.blackview.azdome.R;
 //import cn.com.blackview.azdome.utils.DateUtil;
 //import cn.com.library.gps.LDGPSInvoke;
 //import cn.com.library.helper.RxHelper;
@@ -73,90 +75,80 @@
 //            // 地图UI显示
 //            initUiSetting();
 //
+//            geoJsonSource = new GeoJsonSource("source-id",
+//                    Feature.fromGeometry(Point.fromLngLat(currentPosition.getLongitude(),
+//                            currentPosition.getLatitude())));
+//
 //            mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
 //
-//                        mGeoPoints = new ArrayList<>();
-//                        Observable.interval(1, TimeUnit.MILLISECONDS).take(LDGPSInvoke.getInstance().videoInfo(VideoPath))
-//                                .compose(RxHelper.rxSchedulerHelper())
-//                                .subscribe(new DisposableObserver<Long>() {
-//                                    @Override
-//                                    public void onNext(Long aLong) {
-//                                        LDGPSInvoke.getInstance().GpsInfoinvoke(Integer.parseInt(String.valueOf(aLong)), gpsInfo -> {
-//                                            if (gpsInfo.getLatitude() != 0.0 && gpsInfo.getLongitude() != 0.0) {
+//                mGeoPoints = new ArrayList<>();
+//                Observable.interval(1, TimeUnit.MILLISECONDS).take(LDGPSInvoke.getInstance().videoInfo(VideoPath))
+//                        .compose(RxHelper.rxSchedulerHelper())
+//                        .subscribe(new DisposableObserver<Long>() {
+//                            @Override
+//                            public void onNext(Long aLong) {
+//                                LDGPSInvoke.getInstance().GpsInfoinvoke(Integer.parseInt(String.valueOf(aLong)), gpsInfo -> {
+//                                    if (gpsInfo.getLatitude() != 0.0 && gpsInfo.getLongitude() != 0.0) {
 ////                                                LogHelper.d("ltnq GPS", "getLatitude : " + gpsInfo.getLatitude() + " : "
 ////                                                        + "getLongitude : " + gpsInfo.getLongitude());
-//                                                mGeoPoints.add(Point.fromLngLat(gpsInfo.getLongitude(), gpsInfo.getLatitude()));
-//                                            }
-//                                        });
-//                                    }
-//
-//                                    @Override
-//                                    public void onError(Throwable e) {
-//
-//                                    }
-//
-//                                    @Override
-//                                    public void onComplete() {
-//                                        if (mGeoPoints.size() > 0) {
-//                                            // 定位到初始点
-//                                            LatLng latLng = new LatLng(mGeoPoints.get(0).latitude(), mGeoPoints.get(0).longitude());
-////                                            mapboxMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//
-//                                            CameraPosition cameraPosition = new CameraPosition.Builder()
-//                                                    .target(new LatLng(latLng.getLatitude(), latLng.getLongitude()))
-//                                                    .zoom(17)//放大尺度 从0开始，0即最大比例尺，最大未知，17左右即为街道层级
-//                                                    .bearing(180)//地图旋转，但并不是每次点击都旋转180度，而是相对于正方向180度，即如果已经为相对正方向180度了，就不会进行旋转
-//                                                    .tilt(30)//地图倾斜角度，同上，相对于初始状态（平面）成30度
-//                                                    .build();//创建CameraPosition对象
-//
-//                                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 2000);
-//
-//                                            style.addImage(("marker_icon"), BitmapFactory.decodeResource(
-//                                                    context.getResources(), R.mipmap.pink_dot));
-//
-//                                            geoJsonSource = new GeoJsonSource("line-source",
-//                                                    FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
-//                                                            LineString.fromLngLats(mGeoPoints)
-//                                                    )}));
-//
-//                                            style.addSource(geoJsonSource);
-//
-//                                            style.addLayer(new LineLayer("linelayer", "line-source").withProperties(
-//                                                    PropertyFactory.lineWidth(5f),
-//                                                    PropertyFactory.lineColor(Color.parseColor("#e55e5e"))
-//                                            ));
-//
-//                                            mapboxMap.addMarker(new MarkerOptions()
-//                                                    .position(new LatLng(mGeoPoints.get(0).latitude(), mGeoPoints.get(0).longitude())));
-//
-//                                            mapboxMap.addMarker(new MarkerOptions()
-//                                                    .position(new LatLng(mGeoPoints.get(mGeoPoints.size() - 1).latitude(), mGeoPoints.get(mGeoPoints.size() - 1).longitude())));
-//
-//                                            setBoxMap();
-//
-//                                            mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
-//                                                @Override
-//                                                public boolean onMapClick(@NonNull LatLng point) {
-//                                                    if (animator != null && animator.isStarted()) {
-//                                                        currentPosition = (LatLng) animator.getAnimatedValue();
-//                                                        animator.cancel();
-//                                                    }
-//
-//                                                    animator = ObjectAnimator
-//                                                            .ofObject(latLngEvaluator, currentPosition, point)
-//                                                            .setDuration(2000);
-//                                                    Log.d("ltnq", String.valueOf(point));
-//                                                    animator.addUpdateListener(animatorUpdateListener);
-//                                                    animator.start();
-//
-//                                                    currentPosition = point;
-//                                                    return true;
-//                                                }
-//                                            });
-//                                        }
+//                                        mGeoPoints.add(Point.fromLngLat(gpsInfo.getLongitude(), gpsInfo.getLatitude()));
 //                                    }
 //                                });
-//                    });
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable e) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onComplete() {
+//                                if (mGeoPoints.size() > 0) {
+//                                    LatLng latLng = new LatLng(mGeoPoints.get(0).latitude(), mGeoPoints.get(0).longitude());
+//                                    CameraPosition cameraPosition = new CameraPosition.Builder()
+//                                            .target(new LatLng(latLng.getLatitude(), latLng.getLongitude()))
+//                                            .zoom(17)//放大尺度 从0开始，0即最大比例尺，最大未知，17左右即为街道层级
+//                                            .bearing(180)//地图旋转，但并不是每次点击都旋转180度，而是相对于正方向180度，即如果已经为相对正方向180度了，就不会进行旋转
+//                                            .tilt(30)//地图倾斜角度，同上，相对于初始状态（平面）成30度
+//                                            .build();//创建CameraPosition对象
+//
+//                                    mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 2000);
+//
+//                                    style.addImage(("marker_icon"), BitmapFactory.decodeResource(
+//                                            context.getResources(), R.mipmap.pink_dot));
+//
+//                                    style.addSource(geoJsonSource);
+//
+//                                    style.addSource(new GeoJsonSource("line-source",
+//                                            FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(
+//                                                    LineString.fromLngLats(mGeoPoints)
+//                                            )})));
+//
+//                                    style.addLayer(new LineLayer("linelayer", "line-source").withProperties(
+//                                            PropertyFactory.lineWidth(5f),
+//                                            PropertyFactory.lineColor(Color.parseColor("#239B6E"))
+//                                    ));
+//
+//                                    style.addLayer(new SymbolLayer("layer-id", "source-id")
+//                                            .withProperties(
+//                                                    PropertyFactory.iconImage("marker_icon"),
+//                                                    PropertyFactory.iconIgnorePlacement(true),
+//                                                    PropertyFactory.iconAllowOverlap(true)
+//                                            ));
+//
+//                                    mapboxMap.addMarker(new MarkerOptions()
+//                                            .position(new LatLng(mGeoPoints.get(0).latitude(), mGeoPoints.get(0).longitude())));
+//
+//                                    mapboxMap.addMarker(new MarkerOptions()
+//                                            .position(new LatLng(mGeoPoints.get(mGeoPoints.size() - 1).latitude(), mGeoPoints.get(mGeoPoints.size() - 1).longitude())));
+//
+//                                    setBoxMap();
+//                                } else {
+//                                    mMapView.setVisibility(View.GONE);
+//                                }
+//                            }
+//                        });
+//            });
 //
 //        });
 //    }
@@ -186,18 +178,20 @@
 //                                    LogHelper.d("ltnq GPS", "getLatitude : " + gpsInfo.getLatitude() + " : "
 //                                            + "getLongitude : " + gpsInfo.getLongitude());
 //
-////                                    if (animator != null && animator.isStarted()) {
-////                                        currentPosition = new LatLng(gpsInfo.getLatitude(), gpsInfo.getLongitude());
-////                                        animator.cancel();
-////                                    }
-////
-////                                    animator = ObjectAnimator
-////                                            .ofObject(latLngEvaluator, currentPosition,
-////                                                    new LatLng(gpsInfo.getLatitude(), gpsInfo.getLongitude()))
-////                                            .setDuration(2000);
-////                                    animator.addUpdateListener(animatorUpdateListener);
-////
-////                                    animator.start();
+//                                    if (animator != null && animator.isStarted()) {
+//                                        currentPosition = new LatLng(gpsInfo.getLatitude(), gpsInfo.getLongitude());
+//                                        animator.cancel();
+//                                    }
+//
+//                                    animator = ObjectAnimator
+//                                            .ofObject(latLngEvaluator, currentPosition, new LatLng(gpsInfo.getLatitude(), gpsInfo.getLongitude()))
+//                                            .setDuration(2000);
+//                                    Log.d("ltnq", String.valueOf(new LatLng(gpsInfo.getLatitude(), gpsInfo.getLongitude())));
+//                                    animator.addUpdateListener(animatorUpdateListener);
+//                                    animator.start();
+//
+//                                    currentPosition = new LatLng(gpsInfo.getLatitude(), gpsInfo.getLongitude());
+//                                    mapboxMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
 //                                }
 //                            });
 //
