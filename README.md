@@ -1,4 +1,4 @@
 # MapBox
-![SM-G9550_20200106172345](https://github.com/parkbaird/MapBox/blob/master/img/SM-G9550_20200106172345.png)
-![SM-G9550_20200106172763](https://github.com/parkbaird/MapBox/blob/master/img/SM-G9550_20200106172763.png)
-![SM-G9550_20200106173754](https://github.com/parkbaird/MapBox/blob/master/img/SM-G9550_20200106173754.gif)
+<img src="/img/SM-G9550_20200106172345" alt="图-1：arm64-v8a" width="320px"></img>
+<img src="/img/SM-G9550_20200106172763" alt="图-2：arm64-v8a" width="320px"></img>
+<img src="/img/SM-G9550_20200106173754.gif" alt="图-3：arm64-v8a" width="320px"></img>
